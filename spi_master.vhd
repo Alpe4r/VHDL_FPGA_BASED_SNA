@@ -80,10 +80,7 @@ begin
                         sclk_counter    <= 0;
                         sclk_internal     <= not sclk_internal;
                         
-                        -- DEGISIKLIK BURADA: 
-                        -- sclk_internal '1' olmadan hemen once (yani sclk_internal='0' iken ve '1'e dönüyorken)
-                        -- veriyi kaydiriyoruz. Boylece DAC veriyi yukselen kenarda (sclk '0'dan '1'e gecerken) 
-                        -- okudugunda hat coktan oturmus oluyor.
+                       
                         if sclk_internal = '0' then
                             if bit_counter > 0 then
                                 bit_counter    <= bit_counter - 1;
