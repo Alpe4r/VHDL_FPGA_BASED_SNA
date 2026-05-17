@@ -33,7 +33,7 @@ end entity main_fsm;
 
 architecture Behavioral of main_fsm is
 
-    -- State tanimlarina WAIT_TX_START eklendi
+    
     type state_type is (IDLE, SEND_SPI, WAIT_SPI, READ_XADC, WAIT_CALC, 
                         SEND_HEADER, SEND_ID, SEND_D3, SEND_D2, SEND_D1, SEND_D0, 
                         SEND_CSUM, SEND_FOOTER, WAIT_TX_START, WAIT_TX_DONE, NEXT_STEP);
@@ -97,9 +97,7 @@ begin
                         state   <= SEND_HEADER;
                     end if;
 
-                -------------------------------------------------------
-                -- UART PAKETLEME DONGUSU (YONLENDIRMELER DEGIS TI)
-                -------------------------------------------------------
+               
                 
                 when SEND_HEADER =>
                     uart_data_o <= x"AA";
@@ -154,7 +152,7 @@ begin
                     next_state  <= NEXT_STEP;
                     state       <= WAIT_TX_START;
 
-                -- YENI ARA STATE: UART'in tetiklendigini dogrular
+               
                 when WAIT_TX_START =>
                     if tx_busy = '1' then
                         tx_start <= '0';      -- UART basladi, tetiklemeyi cekebiliriz
