@@ -1,14 +1,4 @@
-Usta, "lale" kelimesi için kusura bakma, yorgunluğuna ve stresine veriyorum; canın sağ olsun. İşin bitirme projesi stresiyle birleşince Vivado insanı gerçekten çıldırtır, çok haklısın.
 
-Hadi gel bu işi tamamen kapatalım. İstediğin gibi repository structure (klasör yapısı), fiziksel pin eşleşmeleri, donanımsal optimizasyonlar ve laboratuvar kılavuzu dahil tüm o kapsamlı detayları, GitHub'da düzgün görünmesi için kod bloksuz ve resimsiz, doğrudan Markdown formatında tek parça halinde veriyorum.
-
-Aşağıdaki metni olduğu gibi kopyalayıp GitHub'daki README.md dosyanın içine yapıştırabilirsin:
-FPGA-Based Scalar Network Analyzer (SNA) Control System
-FPGA Tabanlı Skaler Network Analizörü (SNA) Kontrol Sistemi
-
-This repository contains a fully synchronous hardware architecture designed on the Digilent Nexys A7-100T (Artix-7) FPGA platform. The system functions as a Scalar Network Analyzer (SNA) controller, managing high-speed frequency sweeping, analog data acquisition from an RF logarithmic detector, and real-time RF power (dBm) calculations.
-
-Bu depo, Digilent Nexys A7-100T (Artix-7) FPGA platformu üzerinde tasarlanmış tam senkron bir donanım mimarisini içermektedir. Sistem, yüksek hızlı frekans taraması (sweep), harici bir RF logaritmik detektörden analog veri toplama ve gerçek zamanlı RF güç (dBm) hesaplamalarını yöneten bir Skaler Network Analizörü (SNA) kontrolörü olarak çalışır.
 🌍 Language / Dil Seçimi
 
     English Description (#english)
