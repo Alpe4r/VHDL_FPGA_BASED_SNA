@@ -17,7 +17,7 @@ Bu depo, **Digilent Nexys A7-100T (Artix-7)** FPGA platformu üzerinde tasarlanm
 ## 🇬🇧 English
 
 ### Hardware Architecture & Data Flow
-The system operates under a central Main Finite State Machine (FSM) utilizing strict handshake protocols across 5 core hardware modules to prevent metastability and data loss:
+The system operates under a central Main Finite State Machine (FSM) utilizing strict handshake protocols across core hardware modules to prevent metastability and data loss:
 
 1. **Frequency Sweep Control (SPI Master):** Drives an external DAC (Digital-to-Analog Converter) chip via a high-speed SPI interface to step-scan the RF stimulus frequency.
 2. **Analog Data Acquisition (XADC):** Digitizes the logarithmic analog voltage coming from the RF detector (DUT output) through the JXADC Pmod header (VAUX3 channel) with 12-bit resolution.
@@ -35,7 +35,7 @@ The system operates under a central Main Finite State Machine (FSM) utilizing st
 ## 🇹🇷 Türkçe
 
 ### Sistem Mimarisi ve Veri Akışı
-Cihaz, sinyal kaçırmayı ve kararsızlığı (metastability) önleyen sıkı el sıkışma (handshake) protokollerine sahip, sonlu durum makinesi (Main FSM) kontrollü 5 ana donanım bloğundan oluşur:
+Cihaz, sinyal kaçırmayı ve kararsızlığı (metastability) önleyen sıkı el sıkışma (handshake) protokollerine sahip, sonlu durum makinesi (Main FSM) kontrollü ana donanım bloklarından oluşur:
 
 1. **Frekans Tarama Kontrolü (SPI Master):** Test sinyalinin frekansını adım adım taramak amacıyla, harici bir DAC çipini yüksek hızlı SPI arayüzü üzerinden sürer.
 2. **Analog Veri Toplama (XADC):** RF detektörden (DUT çıkışından) gelen logaritmik analog voltajı JXADC Pmod başlığı (VAUX3 kanalı) üzerinden 12-bit çözünürlükle dijitalleştirir.
@@ -49,27 +49,14 @@ Cihaz, sinyal kaçırmayı ve kararsızlığı (metastability) önleyen sıkı e
 
 ---
 
-## 📌 Pin Mapping / Fiziksel Pin Eşleşmeleri (`constraints.xdc`)
-
-| Port Name | FPGA Pin | Board Label | Function / İşlev |
-| :--- | :--- | :--- | :--- |
-| `clk` | E3 | CLK100MHZ | 100 MHz System Oscillator / Sistem Osilatörü |
-| `reset` | N17 | BTNC (Center) | System Reset / Sistemi Sıfırlar |
-| `start_sweep_i` | M18 | BTNU (Up) | Starts Frequency Sweep / Taramayı Başlatır |
-| `cs` | C17 | PMOD JA - Pin 1 | SPI Chip Select (DAC) |
-| `mosi` | D18 | PMOD JA - Pin 2 | SPI MOSI (Frequency Data) |
-| `sclk` | G17 | PMOD JA - Pin 4 | SPI Serial Clock / Seri Saat |
-| `vauxp3` | A13 | JXADC - Pin 1 | RF Detector Analog Input (+) / Canlı Giriş |
-| `vauxn3` | A14 | JXADC - Pin 7 | RF Detector Analog Ground (-) / Toprak |
-| `tx_pin` | D4 | USB-UART Bridge | FPGA UART Transmission Line / PC Aktarım Hattı |
-
----
-
-## 🔬 Lab Guide / Kullanım Kılavuzu
-
-1. **Program the Board:** Load the generated `.bit` file onto the Nexys A7 via Vivado Hardware Manager.
-   * **Kartı Programlayın:** Üretilen `.bit` dosyasını Vivado Hardware Manager üzerinden Nexys A7 kartınıza yükleyin.
-2. **Serial Connection:** Open a serial terminal (e.g., Putty, RealTerm) on your PC with a Baud Rate of 115200 or 9600.
-   * **Seri Bağlantı:** Bilgisayarınızda bir Seri Port izleme yazılımı (Baud Rate: 115200 veya 9600) aktif edin.
-3. **Execution:** Press **BTNC (Center)** to reset the SNA system, then press **BTNU (Up)** to initiate the scalar network analyzer sweep. The live power spectrum will begin logging onto your screen.
-   * **Çalıştırma:** Kart üzerindeki **BTNC (Orta Buton)** ile sistemi resetleyin, ardından **BTNU (Yukarı Buton)** düğmesine bastığınız anda skaler tarama başlayacak ve ekranınıza RF güç spektrumu akacaktır.
+## 📂 Repository Structure / Proje Klasör Yapısı
+```text
+├── src/
+│   ├── main_fsm.vhd       # Central Control FSM
+│   ├── spi_master.vhd     # DAC SPI Driver Module
+│   ├── xadc_module.vhd    # XADC Primitive Wrapper
+│   ├── dbm_calc.vhd       # Q16.16 Fixed-Point LUT Logic
+│   └── uart_tx.vhd        # RS232 Communication Module
+├── constraints/
+│   └── constraints.xdc    # Nexys A7 Physical Pin Mappings
+└── README.md              # Project Documentation
