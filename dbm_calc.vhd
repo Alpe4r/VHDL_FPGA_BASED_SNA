@@ -21,7 +21,7 @@ end entity dbm_calc;
 architecture Behavioral of dbm_calc is
     type lut_type is array (0 to 4095) of std_logic_vector(31 downto 0);
     
-    -- BURAYA KENDİ LUT DEĞERLERİNİ / TABLANI OLDUĞU GİBİ KOYACAKSIN --
+   
     constant DBM_LUT : lut_type := (
 			
 		0 => x"00280000",
@@ -4120,7 +4120,7 @@ architecture Behavioral of dbm_calc is
 		4093 => x"FFD80A01",
 		4094 => x"FFD80500",
 		4095 => x"FFD80000",
-        others => (others => '0') -- Kodun derlenmesi için geçici taslak, kendi değerlerini buraya yapıştır.
+        others => (others => '0')
     );
     
     signal dbm_val_reg   : std_logic_vector(31 downto 0) := (others => '0');
