@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity main_fsm is
     port (
-        clk             : in  std_logic; -- Sistem saat girişi
+        clk             : in  std_logic; -- Sistem saat girişi (100Mhz)
         reset           : in  std_logic; -- Sistem sıfırlama girişi
         start_sweep     : in  std_logic; -- Frekans taramasını başlatan buton girişi
         spi_start       : out std_logic; -- SPI modülünü başlatan tetikleme çıkışı
@@ -22,18 +22,17 @@ entity main_fsm is
 end entity main_fsm;
 
 architecture Behavioral of main_fsm is
-    -- Ana kontrol ünitesinin tüm çalışma adımları
     type state_type is (IDLE, SEND_SPI, WAIT_SPI, READ_XADC, WAIT_XADC, WAIT_CALC, 
                         SEND_HEADER, SEND_ID, SEND_D3, SEND_D2, SEND_D1, SEND_D0, 
-                        SEND_CSUM, SEND_FOOTER, WAIT_TX_DONE, NEXT_STEP);
+                        SEND_CSUM, SEND_FOOTER, WAIT_TX_START, WAIT_TX_DONE, NEXT_STEP);
     signal state      : state_type := IDLE;
-    signal next_state : state_type := IDLE; -- UART durumunun döneceği hedef adımı tutan sinyal
-    signal dbm_reg      : std_logic_vector(31 downto 0); -- Saklanan güç verisi yazmacı
-    signal checksum     : unsigned(7 downto 0); -- UART paket doğrulama toplamı sinyali
-    signal dac_cnt      : unsigned(11 downto 0) := (others => '0'); -- Ramp voltajı üreten sayaç sinyali
-    constant ID_DBM     : std_logic_vector(7 downto 0) := x"02"; -- Paket veri tipi tanımlama kimliği
+    signal next_state : state_type := IDLE; 
+    signal dbm_reg      : std_logic_vector(31 downto 0); 
+    signal checksum     : unsigned(7 downto 0); 
+    signal dac_cnt      : unsigned(11 downto 0) := (others => '0'); 
+    constant ID_DBM     : std_logic_vector(7 downto 0) := x"02"; 
 begin
-    dac_data <= std_logic_vector(dac_cnt); -- Sayaç değerini çıkış portuna bağlar
+    dac_data <= std_logic_vector(dac_cnt); 
 
     process(clk, reset)
     begin
@@ -50,7 +49,7 @@ begin
             dbm_reg      <= (others => '0');
         elsif rising_edge(clk) then
             case state is
-                when IDLE => -- Sistem bekleme durumu, tarama komutu gözlenir
+                when IDLE => 
                     sweep_active <= '0';
                     dac_cnt      <= (others => '0');
                     tx_start     <= '0';
@@ -60,94 +59,101 @@ begin
                         state <= SEND_SPI;
                     end if;
 
-                when SEND_SPI => -- Voltaj verisinin DAC birimine gönderim aşaması
+                when SEND_SPI => 
                     sweep_active <= '1';
                     spi_start    <= '1';
                     state        <= WAIT_SPI;
 
-                when WAIT_SPI => -- DAC modülünün veri aktarımını bitirmesini bekleme durumu
+                when WAIT_SPI => 
                     spi_start <= '0';
                     if spi_busy = '0' then
                         state <= READ_XADC;
                     end if;
 
-                when READ_XADC => -- XADC dönüşüm sürecini başlatan tek çevrimlik tetikleme durumu
+                when READ_XADC => 
                     start_adc <= '1'; 
                     state     <= WAIT_XADC;
 
-                when WAIT_XADC => -- XADC biriminin analog örneklemeyi tamamlamasını bekleme durumu
+                when WAIT_XADC => 
                     start_adc <= '0'; 
                     if data_ready = '1' then
                         state <= WAIT_CALC;
                     end if;
 
-                when WAIT_CALC => -- Çevrilen analog verinin matematiksel hesaplama bitişini bekleme durumu
+                when WAIT_CALC => 
                     if calc_ready = '1' then
                         dbm_reg <= dbm_data_i;
                         state   <= SEND_HEADER;
                     end if;
 
-                -- UART veri paketinin ardışık olarak bilgisayara iletildiği durumlar
-                when SEND_HEADER => -- Paket başlangıç byte verisinin yüklendiği durum
+                when SEND_HEADER => 
                     uart_data_o <= x"AA";
                     tx_start    <= '1';
                     next_state  <= SEND_ID;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when SEND_ID => -- Paket kimlik veri byte içeriğinin yüklendiği durum
+                when SEND_ID => 
                     uart_data_o <= ID_DBM;
                     checksum    <= unsigned(ID_DBM);
                     tx_start    <= '1';
                     next_state  <= SEND_D3;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when SEND_D3 => -- 32-bitlik güç verisinin en yüksek anlamlı veri byte aşaması
+                when SEND_D3 => 
                     uart_data_o <= dbm_reg(31 downto 24);
                     checksum    <= checksum + unsigned(dbm_reg(31 downto 24));
                     tx_start    <= '1';
                     next_state  <= SEND_D2;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when SEND_D2 => -- 32-bitlik güç verisinin üçüncü veri byte aşaması
+                when SEND_D2 => 
                     uart_data_o <= dbm_reg(23 downto 16);
                     checksum    <= checksum + unsigned(dbm_reg(23 downto 16));
                     tx_start    <= '1';
                     next_state  <= SEND_D1;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when SEND_D1 => -- 32-bitlik güç verisinin ikinci veri byte aşaması
+                when SEND_D1 => 
                     uart_data_o <= dbm_reg(15 downto 8);
                     checksum    <= checksum + unsigned(dbm_reg(15 downto 8));
                     tx_start    <= '1';
                     next_state  <= SEND_D0;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when SEND_D0 => -- 32-bitlik güç verisinin en düşük anlamlı veri byte aşaması
+                when SEND_D0 => 
                     uart_data_o <= dbm_reg(7 downto 0);
                     checksum    <= checksum + unsigned(dbm_reg(7 downto 0));
                     tx_start    <= '1';
                     next_state  <= SEND_CSUM;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when SEND_CSUM => -- Hesaplanan hata kontrol byte verisinin yüklendiği durum
+                when SEND_CSUM => 
                     uart_data_o <= std_logic_vector(checksum);
                     tx_start    <= '1';
                     next_state  <= SEND_FOOTER;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when SEND_FOOTER => -- Paket bitiş byte verisinin yüklendiği durum
+                when SEND_FOOTER => 
                     uart_data_o <= x"55";
                     tx_start    <= '1';
                     next_state  <= NEXT_STEP;
-                    state       <= WAIT_TX_DONE;
+                    state       <= WAIT_TX_START;
 
-                when WAIT_TX_DONE => -- Aktarılan byte verisinin fiziksel iletim bitişini bekleme durumu
+                when WAIT_TX_START => 
+                    -- UART modülü emri alıp tx_busy='1' yapana kadar tetiği çekili tutar
+                    if tx_busy = '1' then
+                        tx_start <= '0'; 
+                        state    <= WAIT_TX_DONE;
+                    end if;
+
+                when WAIT_TX_DONE => 
                     tx_start <= '0'; 
+                    -- UART modülü byte'ı hattan tamamen bitirip tx_busy='0' yapınca yeni adıma geçer
                     if tx_busy = '0' then
                         state <= next_state;
                     end if;
 
-                when NEXT_STEP => -- Tarama döngüsünün kontrol edildiği ve voltaj sayaç adımının güncellendiği durum
+                when NEXT_STEP => 
                     if dac_cnt < 4095 then
                         dac_cnt <= dac_cnt + 1;
                         state   <= SEND_SPI;
